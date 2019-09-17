@@ -1,0 +1,1 @@
+load("polity_data.rda")
