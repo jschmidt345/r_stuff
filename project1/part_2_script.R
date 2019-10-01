@@ -18,16 +18,16 @@ my_func2 <- function(input_vector){
       min_input <- min(input_vector)
       std_input <- sd(input_vector)
       
-      return(c('length =', n, 
-               'mean = ', mean_input,
-               'median = ', median_input,
-               'max = ', max_input,
-               'min = ', min_input,
-               'stdev = ', std_input))
+      return(c(length=n, 
+               mean=mean_input,
+               median=median_input,
+               max=max_input,
+               min=min_input,
+               stdev=std_input))
     }
     return('Error, not numeric')
 }
 
-test <- my_func2(c(1, 2, 4, NA, 'hell'))
+test <- my_func2(c(1, 2, 4, NA, 3))
 
 
