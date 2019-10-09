@@ -45,3 +45,55 @@ cars[1, 1] <- 'a'
 
 x[[2]][1] <- 'ta'
 
+
+# take away list structure
+
+unlist(x)
+
+# Named list
+v <- list(vec1=c(2, 3, 5), vec2=c('aa', 'bb'))
+
+v[['vec1']]
+
+# lists of lists
+
+new_l <- list(list(1, 2, 3), list('sun', 'mon', 'stues'))
+
+w <- c(2, 7, 8)
+v <- c('a', 'b', 'c', 'a', 'a')
+x <- list(w, v)
+
+x[[2]][1] <- 'z'
+
+# change all as to z
+
+a <- which(x[[2]] == 'a')
+x[[2]][a] = 'z'
+
+#or
+
+ifelse(x[[2]] == 'z',  'a', x[[2]])
+
+a <- list('x' = 5, 'y' = 10, 'z' = 15)
+
+# sum all the vals
+
+sum(unlist(a))
+
+
+new_list <- list(a = c(1 : 10), b = 'hello', c = 'hi')
+
+# add 1 to every elemt of newlist
+
+new_list[['a']] <- new_list[['a']] + 1
+
+
+
+# add a list element z with a val nbew item
+x <- list(a = c(1 : 50), b = 'hello', c = 'hi')
+
+x$z <- 'newitem'
+
+
+
+ 
