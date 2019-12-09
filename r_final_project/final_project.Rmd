@@ -1,0 +1,210 @@
+---
+title: "Factors of US GDP and predicting GDP growth"
+author:
+  - "Marquise Baggiore"
+  - "Jacob Schmidt"
+  - "Conner Williams"
+output:
+  html_document:
+    theme: readable
+  pdf_document: default
+  
+---
+<html>
+
+```{r include = FALSE, echo = FALSE}
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+```
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+<br>
+<br>
+<br>
+***Distributions of independent variables***
+```{r include=FALSE, echo = FALSE}
+### loading in data, all log scale except gdp ###
+df_gdp <- c(read.csv('GDPC1 (1).csv'))
+df_consump <- read.csv('consumption_log.csv')
+df_govt <- read.csv('govt_spen_ln.csv')
+df_invest <- read.csv('investment_log.csv')
+df_cons_conf <- read.csv('UMCSENT_log.csv')
+df <- data.frame(df_gdp, df_consump, df_govt, df_invest, df_cons_conf)
+```
+
+```{r echo = FALSE}
+Govt_Expen <- df$W068RCQ027SBEA
+Private_Inv <- df$GPDIC1
+GDP <- df$GDPC1
+Consumption <- df$PCE
+Consumer_Sentiment <- df$UMCSENT
+
+
+consump_hist <- ggplot(df,  aes(x=Consumption)) + geom_histogram(bins=10)+
+  ggtitle('PCE')
+invest_hist <- ggplot(df,  aes(x=Private_Inv)) + geom_histogram(bins=10)+
+  ggtitle('Private Investment')
+confidence_hist <- ggplot(df,  aes(x=Consumer_Sentiment)) + geom_histogram(bins=10)+
+  ggtitle('Consumer Confidence')
+govt_hist <- ggplot(df,  aes(x=Govt_Expen)) + geom_histogram(bins=10)+
+  ggtitle('Govt. Expenditure')
+grid.arrange(consump_hist, invest_hist, confidence_hist, govt_hist, nrow = 2)
+```
+<br>
+<br>
+<br>
+
+
+```{r include = FALSE, echo=FALSE}
+### summary stats of each df ###
+mean_std_max_min_conf <- c(mean(df$UMCSENT), sd(df$UMCSENT), max(df$UMCSENT), min(df$UMCSENT))
+mean_std_max_min_consumption <- c(mean(df$PCE), sd(df$PCE), max(df$PCE), min(df$PCE))
+mean_std_max_min_gdp <- c(mean(df$GDPC1), sd(df$GDPC1), max(df$GDPC1), min(df$GDPC1))
+mean_std_max_govt <-  c(mean(df$W068RCQ027SBEA), sd(df$W068RCQ027SBEA), max(df$W068RCQ027SBEA), min(df$W068RCQ027SBEA))
+mean_std_max_inv <-  c(mean(df$GPDIC1), sd(df$GPDIC1), max(df$GPDIC1), min(df$GPDIC1))
+
+```
+
+```{r include = FALSE, echo=FALSE}
+### correlation for dependendent var(gdp) by independent vars(consumption, consumer confidence, invesment, govt spending) ###
+corr_cons_conf_gdp <- cor(x=df$UMCSENT, df$GDPC1)
+corr_cons_gdp <- cor(df$PCE, df$GDPC1)
+corr_inv_gdp <- cor(df$GPDIC1, df$GDPC1)
+corr_govt_gdp <- cor(df$W068RCQ027SBEA, df$GDPC1)
+```
+***Scatter plots of Independent Variables on GDP***
+<br>
+<br>
+```{r echo=FALSE}
+### scatterplots for relationship visualization ###
+sentiment_gdp <- 
+  ggplot(df, aes(x = Consumer_Sentiment, y = GDP)) +
+  geom_point(colour = "red")
+
+consumption_gdp <- ggplot(df, aes(x = Consumption, y = GDP)) +
+  geom_point(colour = "red")
+
+govt_spen_gdp <- ggplot(df, aes(x = Govt_Expen, y = GDP)) +
+  geom_point(colour = "red")
+
+inv_gdp <- ggplot(df, aes(x = Private_Inv, y = GDP)) +
+  geom_point(colour = "red")
+
+# *** from scatter plot, consumer sentiment is clearly not linear, even after natural log ***
+# *** must exclude from ols ***
+grid.arrange(sentiment_gdp, consumption_gdp, govt_spen_gdp, inv_gdp, nrow = 2)
+```
+<br>
+<br>
+<br>
+***Fitted Simple Models***
+<br>
+<br>
+```{r echo=FALSE}
+# simple model pce
+
+simple_equation_pce <- GDPC1 ~ PCE
+simple_model_pce <- lm(simple_equation_pce, data=df)
+pce_summary <- summary(simple_model_pce)
+
+fitted_consumption <- ggplot(data = df, aes(x = Consumption, y = GDP)) +
+  geom_point() +
+  stat_smooth(method = "lm", col = "green") +
+  theme(panel.background = element_rect(fill = "white"),
+        axis.line.x=element_line(),
+        axis.line.y=element_line()) +
+  ggtitle("Linear Model Fitted to Data")
+
+
+
+# simple model govt spending
+simple_equation_govt <- GDPC1 ~ W068RCQ027SBEA
+simple_model_govt <- lm(simple_equation_govt, data=df)
+govt_summary <- summary(simple_model_govt)
+
+fitted_govt_spen <- ggplot(data = df, aes(x = Govt_Expen, y = GDP)) +
+  geom_point() +
+  stat_smooth(method = "lm", col = "green") +
+  theme(panel.background = element_rect(fill = "white"),
+        axis.line.x=element_line(),
+        axis.line.y=element_line()) +
+  ggtitle("Linear Model Fitted to Data")
+
+
+
+
+# simple model private investment
+simple_equation_investment <- GDPC1 ~ GPDIC1
+simple_model_inv <- lm(simple_equation_investment, data=df)
+investment_summary <- summary(simple_model_inv)
+
+fitted_investment <- ggplot(data = df, aes(x = Private_Inv, y = GDP)) +
+  geom_point() +
+  stat_smooth(method = "lm", col = "green") +
+  theme(panel.background = element_rect(fill = "white"),
+        axis.line.x=element_line(),
+        axis.line.y=element_line()) +
+  ggtitle("Linear Model Fitted to Data")
+
+
+
+# simple model consumer sentiment
+simple_equation_sentiment <- GDPC1 ~ UMCSENT
+simple_model_sent <- lm(simple_equation_investment, data=df)
+sentiment_summary <- summary(simple_model_inv)
+
+fitted_sentiment <- ggplot(data = df, aes(x = Consumer_Sentiment, y = GDP)) +
+  geom_point() +
+  stat_smooth(method = "lm", col = "green") +
+  theme(panel.background = element_rect(fill = "white"),
+        axis.line.x=element_line(),
+        axis.line.y=element_line()) +
+  ggtitle("Linear Model Fitted to Data")
+
+grid.arrange(fitted_consumption, fitted_govt_spen, fitted_investment, fitted_sentiment, nrow = 2)
+
+```
+<br>
+<br>
+<br>
+
+***Summary of Multiple Regression Model***
+<br>
+<br>
+```{r echo=FALSE}
+# multiple regression model
+
+equation_multiple <- GDPC1 ~ PCE + GPDIC1 + W068RCQ027SBEA
+fitted_multiple_model <- lm(equation_multiple, data=df)
+
+
+
+test_val <- c(runif(3, min=0, max=100))
+predicted_gdp <- predict(fitted_multiple_model, data.frame(GPDIC1=test_val[1], PCE=test_val[2], W068RCQ027SBEA=test_val[3]))
+
+summary(fitted_multiple_model)
+predicted_gdp
+
+```
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
